@@ -427,7 +427,7 @@ function LazyPig_OnEvent(event)
 		local LP_AUTHOR = GetAddOnMetadata("_LazyPig", "Author")
 
 		-- Check if UnitXP_SP3 timer exist, or fallback to UIFrame:OnUpdate
-		if( pcall("UnitXP", "inSight", "player", "player") ) then
+		if( pcall(UnitXP, "inSight", "player", "player") ) then
 			if(unitxp_sp3_timer < 0) then
 				unitxp_sp3_timer = UnitXP("timer", "arm", 200, 200, "LazyPig_OnUpdate")
 			end
