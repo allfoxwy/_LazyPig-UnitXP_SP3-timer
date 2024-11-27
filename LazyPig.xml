@@ -11,9 +11,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnEvent>
 				 LazyPig_OnEvent(event);
 			</OnEvent>
-			<OnUpdate>
-				LazyPig_OnUpdate();
-			</OnUpdate>
 		</Scripts>
 		<Anchors>
 			<Anchor point="TOP" relativeTo="PVPArenaTextString" relativePoint="BOTTOM" />

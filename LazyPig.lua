@@ -64,6 +64,8 @@ local Original_SetItemRef = SetItemRef;
 local Original_ChatFrame_OnEvent = ChatFrame_OnEvent;
 local Original_StaticPopup_OnShow = StaticPopup_OnShow;
 
+local unitxp_sp3_timer = -1
+
 local roster_task_refresh = 0
 local last_click = 0
 local delayaction = 0
@@ -219,6 +221,7 @@ function LazyPig_OnLoad()
 	this:RegisterEvent("ADDON_LOADED");
 	this:RegisterEvent("PLAYER_LOGIN")
 	--this:RegisterEvent("PLAYER_ENTERING_WORLD")
+	this:RegisterEvent("PLAYER_LEAVING_WORLD")
 end
 
 function LazyPig_Command()
@@ -422,6 +425,15 @@ function LazyPig_OnEvent(event)
 		local LP_TITLE = GetAddOnMetadata("_LazyPig", "Title")
 		local LP_VERSION = GetAddOnMetadata("_LazyPig", "Version")
 		local LP_AUTHOR = GetAddOnMetadata("_LazyPig", "Author")
+
+		-- Check if UnitXP_SP3 timer exist, or fallback to UIFrame:OnUpdate
+		if( pcall("UnitXP", "inSight", "player", "player") ) then
+			if(unitxp_sp3_timer < 0) then
+				unitxp_sp3_timer = UnitXP("timer", "arm", 200, 200, "LazyPig_OnUpdate")
+			end
+		else
+			this:SetScript("OnUpdate", LazyPig_OnUpdate)
+		end
 		
 		DEFAULT_CHAT_FRAME:AddMessage(LP_TITLE .. " v" .. LP_VERSION .. " by " .."|cffFF0066".. LP_AUTHOR .."|cffffffff".. " loaded, type".."|cff00eeee".." /lp".."|cffffffff for options")
 	elseif (event == "PLAYER_LOGIN") then
@@ -710,6 +722,11 @@ function LazyPig_OnEvent(event)
 			StaticPopup_Hide("RESURRECT");
 		end
 		TargetLastTarget();
+	elseif(event == "PLAYER_LEAVING_WORLD") then
+		if(unitxp_sp3_timer >= 0) then
+			UnitXP("timer", "disarm", unitxp_sp3_timer);
+			unitxp_sp3_timer = -1;
+		end
 	end
 	--DEFAULT_CHAT_FRAME:AddMessage(event);	
 end
