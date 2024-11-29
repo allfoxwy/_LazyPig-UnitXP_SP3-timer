@@ -65,6 +65,7 @@ local Original_ChatFrame_OnEvent = ChatFrame_OnEvent;
 local Original_StaticPopup_OnShow = StaticPopup_OnShow;
 
 local unitxp_sp3_timer = -1
+local unitxp_sp3 = false
 
 local roster_task_refresh = 0
 local last_click = 0
@@ -221,7 +222,7 @@ function LazyPig_OnLoad()
 	this:RegisterEvent("ADDON_LOADED");
 	this:RegisterEvent("PLAYER_LOGIN")
 	--this:RegisterEvent("PLAYER_ENTERING_WORLD")
-	this:RegisterEvent("PLAYER_LEAVING_WORLD")
+	this:RegisterEvent("PLAYER_LOGOUT")
 end
 
 function LazyPig_Command()
@@ -426,15 +427,6 @@ function LazyPig_OnEvent(event)
 		local LP_VERSION = GetAddOnMetadata("_LazyPig", "Version")
 		local LP_AUTHOR = GetAddOnMetadata("_LazyPig", "Author")
 
-		-- Check if UnitXP_SP3 timer exist, or fallback to UIFrame:OnUpdate
-		if( pcall(UnitXP, "inSight", "player", "player") ) then
-			if(unitxp_sp3_timer < 0) then
-				unitxp_sp3_timer = UnitXP("timer", "arm", 200, 200, "LazyPig_OnUpdate")
-			end
-		else
-			this:SetScript("OnUpdate", LazyPig_OnUpdate)
-		end
-		
 		DEFAULT_CHAT_FRAME:AddMessage(LP_TITLE .. " v" .. LP_VERSION .. " by " .."|cffFF0066".. LP_AUTHOR .."|cffffffff".. " loaded, type".."|cff00eeee".." /lp".."|cffffffff for options")
 	elseif (event == "PLAYER_LOGIN") then
 	--if (event == "PLAYER_ENTERING_WORLD") then
@@ -494,7 +486,18 @@ function LazyPig_OnEvent(event)
 		if LPCONFIG.CAM then SetCVar("cameraDistanceMax",50) end
 		if LPCONFIG.LOOT then UIPanelWindows["LootFrame"] = nil end
 		QuestRecord["index"] = 0
-		
+
+		-- Check if UnitXP_SP3 timer exist, or fallback to UIFrame:OnUpdate
+		unitxp_sp3 = pcall(UnitXP, "nop", "nop")
+
+		if( unitxp_sp3 ) then
+			if unitxp_sp3_timer < 0 then
+				unitxp_sp3_timer = UnitXP("timer", "arm", 200, 200, "LazyPig_OnUpdate")
+			end
+		else
+			this:SetScript("OnUpdate", LazyPig_OnUpdate)
+		end
+
 		--TargetUnit("player")
 		--SendChatMessage(".xp 8", "SAY") --qgaming version
 		--SendChatMessage(".exp 5", "SAY") --scriptcraft version
@@ -722,7 +725,7 @@ function LazyPig_OnEvent(event)
 			StaticPopup_Hide("RESURRECT");
 		end
 		TargetLastTarget();
-	elseif(event == "PLAYER_LEAVING_WORLD") then
+	elseif(event == "PLAYER_LOGOUT") then
 		if(unitxp_sp3_timer >= 0) then
 			UnitXP("timer", "disarm", unitxp_sp3_timer);
 			unitxp_sp3_timer = -1;
